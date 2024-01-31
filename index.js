@@ -2,7 +2,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
 const { connectDB } = require('./configs/db.config');
-const userRouter = require('./routes/userRoute');
+const authRoute = require('./routes/authRoute');
+const { verifyToken, verifyRole } = require('./middlewares/verify');
 
 // express app
 const app = express();
@@ -26,7 +27,15 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/api/v1/auth', userRouter);
+app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/user', verifyToken, verifyRole, (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        code: 200,
+        data: {},
+        message: 'Welcome to admin dashboard',
+    });
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
