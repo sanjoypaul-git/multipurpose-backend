@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Blacklist = require('../models/blacklist');
 
 module.exports = {
     verifyToken: async function (req, res, next) {
@@ -18,6 +19,18 @@ module.exports = {
             }
 
             const cookie = authHeader.split('=')[1];
+            const accessToken = cookie.split(';')[0];
+            const checkBlacklisted = await Blacklist.findOne({ token: accessToken });
+            if (checkBlacklisted) {
+                return res.status(401).json({
+                    errors: {
+                        status: 'unauthorized',
+                        code: 401,
+                        data: {},
+                        message: 'Session has expired. Please login!',
+                    }
+                });
+            }
 
             jwt.verify(cookie, process.env.JWT_TOKEN, async (err, decoded) => {
                 if (err) {

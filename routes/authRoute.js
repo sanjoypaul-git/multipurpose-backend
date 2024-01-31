@@ -1,6 +1,6 @@
 const express = require('express');
 const { addUsersValidators, loginUsersValidators, usersValidationHandler } = require('../middlewares/users/userValidators');
-const { register, login } = require('../controllers/auth');
+const { register, login, logout } = require('../controllers/auth');
 
 const router = express.Router();
 
@@ -26,6 +26,16 @@ router.post(
     loginUsersValidators,
     usersValidationHandler,
     login
+);
+
+/**
+ * @route GET api/v1/auth/logout
+ * @desc logout a user
+ * @access public
+ */
+router.get(
+    '/logout',
+    logout
 );
 
 module.exports = router;

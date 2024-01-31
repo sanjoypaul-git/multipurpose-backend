@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Blacklist = require('../models/blacklist');
 
 module.exports = {
     register: async function (req, res) {
@@ -91,6 +92,55 @@ module.exports = {
                     user: userData,
                 },
                 message: 'You have successfully logged in!',
+            });
+        } catch (e) {
+            return res.status(500).json({
+                errors: {
+                    status: 'server error',
+                    code: 500,
+                    data: {},
+                    message: 'Internal server error',
+                },
+            });
+        }
+    },
+    logout: async function (req, res) {
+        try {
+            const authHeader = req.headers['cookie'];
+            if (!authHeader) {
+                return res.status(204).json({
+                    errors: {
+                        status: 'no content',
+                        code: 204,
+                        data: {},
+                        message: 'No cookie found in headers!',
+                    }
+                });
+            }
+            const cookie = authHeader.split('=')[1];
+            const accessToken = cookie.split(';')[0];
+            const checkBlacklisted = await Blacklist.findOne({ token: accessToken });
+            if (checkBlacklisted) {
+                return res.status(204).json({
+                    errors: {
+                        status: 'no content',
+                        code: 204,
+                        data: {},
+                        message: 'Blacklisted cookie!',
+                    }
+                });
+            }
+            const newBlacklist = new Blacklist({
+                token: accessToken,
+            });
+            await newBlacklist.save();
+            res.setHeader('Clear-Site-Data', 'cookies');
+
+            return res.status(200).json({
+                status: 'success',
+                code: 200,
+                data: {},
+                message: 'You are successfully logged out!',
             });
         } catch (e) {
             return res.status(500).json({
