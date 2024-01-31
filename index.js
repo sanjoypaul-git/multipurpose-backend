@@ -21,6 +21,7 @@ connectDB();
 app.get('/', (req, res) => {
     res.status(200).json({
         status: 'success',
+        code: 200,
         message: 'Welcome to multipurpose-db',
     });
 });
@@ -30,7 +31,8 @@ app.use('/api/v1/auth', userRouter);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     res.status(404).json({
-        status: 404,
+        status: "not found",
+        code: 404,
         message: "No such route exists",
     });
 });
@@ -39,6 +41,7 @@ app.use(function (req, res, next) {
 app.use(function (err, req, res, next) {
     res.status(err.status).json({
         status: err.status,
+        code: err.code,
         message: err.message,
     });
 });

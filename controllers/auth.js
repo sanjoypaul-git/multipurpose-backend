@@ -18,16 +18,21 @@ module.exports = {
             const {password: savedPassword, ...userData} = savedUser._doc;
             return res.status(200).json({
                 status: 'success',
-                data: [userData],
+                code: 200,
+                data: {
+                    user: userData,
+                },
                 message: 'User was added successfully!',
             });
         } catch (e) {
             console.log(e)
             return res.status(500).json({
-                status: 'error',
-                code: 500,
-                data: [],
-                message: 'Internal server error',
+                errors: {
+                    status: 'server error',
+                    code: 500,
+                    data: {},
+                    message: 'Internal server error',
+                },
             });
         }
     },
@@ -38,18 +43,24 @@ module.exports = {
             const user = await User.findOne({ email }).select('+password');
             if (!user) {
                 return res.status(401).json({
-                    status: 'failed',
-                    data: [],
-                    message: 'Invalid email or password'
+                    errors: {
+                        status: 'unauthenticated',
+                        code: 401,
+                        data: {},
+                        message: 'Invalid email or password'
+                    },
                 });
             }
 
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
                 return res.status(401).json({
-                    status: 'failed',
-                    data: [],
-                    message: 'Invalid email or password',
+                    errors: {
+                        status: 'unauthenticated',
+                        code: 401,
+                        data: {},
+                        message: 'Invalid email or password',
+                    },
                 });
             }
 
@@ -74,6 +85,7 @@ module.exports = {
             res.cookie('SessionID', token, options);
             return res.status(200).json({
                 status: 'success',
+                code: 200,
                 data: {
                     "access_token": token,
                     user: userData,
@@ -82,10 +94,12 @@ module.exports = {
             });
         } catch (e) {
             return res.status(500).json({
-                status: 'error',
-                code: 500,
-                data: [],
-                message: 'Internal server error',
+                errors: {
+                    status: 'server error',
+                    code: 500,
+                    data: {},
+                    message: 'Internal server error',
+                },
             });
         }
     },
